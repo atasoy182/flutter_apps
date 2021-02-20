@@ -1,8 +1,10 @@
 import 'package:crud_app/not_detay.dart';
 import 'package:crud_app/utils/database_helper.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'models/kategori.dart';
+import 'models/notlar.dart';
 
 void main() {
   runApp(HomePage());
@@ -29,36 +31,31 @@ class NotListesi extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: Center(
-          child: Text("Not Sepeti"),
+        key: _scaffoldKey,
+        appBar: AppBar(
+          title: Center(
+            child: Text("Not Sepeti"),
+          ),
         ),
-      ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            onPressed: () => {kategoriEkle(context)},
-            heroTag: "KategoriEkle",
-            mini: true,
-            tooltip: "Kategori Ekle",
-            child: Icon(Icons.add_circle),
-          ),
-          FloatingActionButton(
-            onPressed: () => _detaySayfasinaGit(context),
-            heroTag: "NotEkle",
-            tooltip: "Not Ekle",
-            child: Icon(Icons.add),
-          ),
-        ],
-      ),
-      body: Container(
-        width: 100,
-        height: 100,
-        color: Colors.red,
-      ),
-    );
+        floatingActionButton: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              onPressed: () => {kategoriEkle(context)},
+              heroTag: "KategoriEkle",
+              mini: true,
+              tooltip: "Kategori Ekle",
+              child: Icon(Icons.add_circle),
+            ),
+            FloatingActionButton(
+              onPressed: () => _detaySayfasinaGit(context),
+              heroTag: "NotEkle",
+              tooltip: "Not Ekle",
+              child: Icon(Icons.add),
+            ),
+          ],
+        ),
+        body: Notlar());
   }
 
   Future kategoriEkle(BuildContext context) {
@@ -140,5 +137,137 @@ class NotListesi extends StatelessWidget {
   _detaySayfasinaGit(BuildContext context) {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => NotDetay(baslik: "Yeni Not")));
+  }
+}
+
+class Notlar extends StatefulWidget {
+  @override
+  _NotlarState createState() => _NotlarState();
+}
+
+class _NotlarState extends State<Notlar> {
+  List<Not> tumNotlar;
+  DatabaseHelper databaseHelper;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    tumNotlar = List<Not>();
+    databaseHelper = DatabaseHelper();
+    // future builder kullanarak yapalım.
+//    databaseHelper.notlariGetir().then((notlariicerenmaplistesi) {
+//      for (Map map in notlariicerenmaplistesi) {
+//        tumNotlar.add(Not.fromMap(map));
+//      }
+//      setState(() {});
+//    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: databaseHelper.notListesiniGetir(),
+      builder: (context, AsyncSnapshot<List<Not>> snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          tumNotlar = snapshot.data;
+
+          return ListView.builder(
+              itemCount: tumNotlar.length,
+              itemBuilder: (context, index) {
+                return ExpansionTile(
+                  title: Text(tumNotlar[index].notBaslik),
+                  leading: _oncelikIconuAta(tumNotlar[index].notOncelik),
+                  //subtitle: Text(tumNotlar[index].kategoriBaslik),
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.all(4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "Kategori:",
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  tumNotlar[index].kategoriBaslik,
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "Oluşturulma Tarihi:",
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  databaseHelper.dateFormat(DateTime.parse(
+                                      tumNotlar[index].notTarih)),
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              "İçerik:" + tumNotlar[index].notIcerik,
+                              style: TextStyle(fontSize: 22),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                );
+              });
+        } else {
+          return Center(child: CircularProgressIndicator());
+        }
+      },
+    );
+  }
+
+  _oncelikIconuAta(int notOncelik) {
+    switch (notOncelik) {
+      case 0:
+        return CircleAvatar(
+          child: Text(
+            "AZ",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red.shade100,
+        );
+        break;
+      case 1:
+        return CircleAvatar(
+          child: Text("ORTA", style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.red.shade200,
+        );
+
+        break;
+      case 2:
+        return CircleAvatar(
+          child: Text("ACİL", style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.red.shade700,
+        );
+        break;
+    }
   }
 }
