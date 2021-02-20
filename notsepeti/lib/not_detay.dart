@@ -6,8 +6,9 @@ import 'models/notlar.dart';
 
 class NotDetay extends StatefulWidget {
   String baslik;
+  Not duzenlenecekNot;
 
-  NotDetay({this.baslik});
+  NotDetay({this.baslik, this.duzenlenecekNot});
 
   @override
   _NotDetayState createState() => _NotDetayState();
@@ -17,8 +18,8 @@ class _NotDetayState extends State<NotDetay> {
   var formKey = GlobalKey<FormState>();
   List<Kategori> tumKategoriler = [];
   DatabaseHelper databaseHelper;
-  int kategoriID = 1;
-  int secilenOncelik = 0;
+  int kategoriID;
+  int secilenOncelik;
   String notBaslik, notIcerik;
 
   static var _oncelik = ["Düşük", "Orta", "Yüksek"];
@@ -30,9 +31,20 @@ class _NotDetayState extends State<NotDetay> {
     tumKategoriler = List<Kategori>();
     databaseHelper = DatabaseHelper();
     databaseHelper.kategorileriGetir().then((kategoriMapListesi) {
-      for (Map map in kategoriMapListesi) {
-        tumKategoriler.add(Kategori.fromMap(map));
+      if (kategoriMapListesi != null) {
+        for (Map map in kategoriMapListesi) {
+          tumKategoriler.add(Kategori.fromMap(map));
+        }
       }
+
+      if (widget.duzenlenecekNot == null) {
+        kategoriID = 1;
+        secilenOncelik = 0;
+      } else {
+        kategoriID = widget.duzenlenecekNot.kategoriID;
+        secilenOncelik = widget.duzenlenecekNot.notOncelik;
+      }
+
       setState(() {});
     });
   }
@@ -85,6 +97,9 @@ class _NotDetayState extends State<NotDetay> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: TextFormField(
+                            initialValue: widget.duzenlenecekNot != null
+                                ? widget.duzenlenecekNot.notBaslik
+                                : "",
                             validator: (text) {
                               if (text.length < 3) {
                                 return "En az 3 Karakter giriniz!";
@@ -100,6 +115,9 @@ class _NotDetayState extends State<NotDetay> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: TextFormField(
+                            initialValue: widget.duzenlenecekNot != null
+                                ? widget.duzenlenecekNot.notIcerik
+                                : "",
                             maxLines: 4,
                             onSaved: (text) => notIcerik = text,
                             decoration: InputDecoration(
@@ -159,18 +177,40 @@ class _NotDetayState extends State<NotDetay> {
                               if (formKey.currentState.validate()) {
                                 formKey.currentState.save();
                                 var suan = DateTime.now();
-                                databaseHelper
-                                    .notEkle(Not(
-                                        kategoriID,
-                                        notBaslik,
-                                        notIcerik,
-                                        suan.toString(),
-                                        secilenOncelik))
-                                    .then((kaydedilenNotID) {
-                                  if (kaydedilenNotID != 0) {
-                                    Navigator.pop(context);
-                                  }
-                                });
+                                print("111111111111111111");
+                                if (widget.duzenlenecekNot == null) {
+                                  print("222222222222222222222222");
+
+                                  databaseHelper
+                                      .notEkle(Not(
+                                          kategoriID,
+                                          notBaslik,
+                                          notIcerik,
+                                          suan.toString(),
+                                          secilenOncelik))
+                                      .then((kaydedilenNotID) {
+                                    if (kaydedilenNotID != 0) {
+                                      Navigator.pop(context);
+                                    }
+                                  });
+                                } else {
+                                  print("333333333333333333333333");
+
+                                  databaseHelper
+                                      .notGuncelle(Not.withID(
+                                          widget.duzenlenecekNot.notID,
+                                          kategoriID,
+                                          notBaslik,
+                                          notIcerik,
+                                          suan.toString(),
+                                          secilenOncelik))
+                                      .then((value) {
+                                    print("val:" + value.toString());
+                                    if (value != 0) {
+                                      Navigator.pop(context);
+                                    }
+                                  });
+                                }
                               }
                             },
                             child: Text("Kaydet"),
@@ -184,37 +224,16 @@ class _NotDetayState extends State<NotDetay> {
   }
 
   List<DropdownMenuItem<int>> kategoriItemOlustur() {
-    return tumKategoriler
-        .map((kategori) => DropdownMenuItem<int>(
-              value: kategori.kategoriID,
-              child: Text(
-                kategori.kategoriBaslik,
-                style: TextStyle(fontSize: 32),
-              ),
-            ))
-        .toList();
+    if (tumKategoriler.length > 0) {
+      return tumKategoriler
+          .map((kategori) => DropdownMenuItem<int>(
+                value: kategori.kategoriID,
+                child: Text(
+                  kategori.kategoriBaslik,
+                  style: TextStyle(fontSize: 32),
+                ),
+              ))
+          .toList();
+    }
   }
 }
-
-/*
-* Form(
-        key: formKey,
-        child: Column(
-          children: [
-            Center(
-              child: tumKategoriler.length <= 0
-                  ? CircularProgressIndicator()
-                  : DropdownButton<int>(
-                      value: kategoriID,
-                      items: kategoriItemOlustur(),
-                      onChanged: (secilenKategoriID) {
-                        setState(() {
-                          kategoriID = secilenKategoriID;
-                        });
-                      }),
-            )
-          ],
-        ),
-      ),
-*
-* */

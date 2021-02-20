@@ -68,6 +68,15 @@ class DatabaseHelper {
     return sonuc;
   }
 
+  Future<List<Kategori>> kategoriListesiniGetir() async {
+    var kategorileriIcerenMapListesi = await kategorileriGetir();
+    var kategoriListesi = List<Kategori>();
+    for (Map map in kategorileriIcerenMapListesi) {
+      kategoriListesi.add(Kategori.fromMap(map));
+    }
+    return kategoriListesi;
+  }
+
   Future<int> kategoriEkle(Kategori kategori) async {
     var db = await _getDatabase();
     var sonuc = await db.insert("kategori", kategori.toMap());
@@ -81,10 +90,10 @@ class DatabaseHelper {
     return sonuc;
   }
 
-  Future<int> kategoriSil(Kategori kategori) async {
+  Future<int> kategoriSil(int kategoriID) async {
     var db = await _getDatabase();
-    var sonuc = await db.delete("kategori",
-        where: "kategoriID = ?", whereArgs: [kategori.kategoriID]);
+    var sonuc = await db
+        .delete("kategori", where: "kategoriID = ?", whereArgs: [kategoriID]);
     return sonuc;
   }
 
@@ -115,15 +124,15 @@ class DatabaseHelper {
 
   Future<int> notGuncelle(Not not) async {
     var db = await _getDatabase();
-    var sonuc = await db.update("not", not.toMap(),
-        where: 'notID = ?', whereArgs: [not.kategoriID]);
+    var sonuc = await db
+        .update("not", not.toMap(), where: 'notID = ?', whereArgs: [not.notID]);
     return sonuc;
   }
 
-  Future<int> notSil(Not not) async {
+  Future<int> notSil(int silinecekNotID) async {
     var db = await _getDatabase();
     var sonuc =
-        await db.delete("not", where: "notID = ?", whereArgs: [not.notID]);
+        await db.delete("not", where: "notID = ?", whereArgs: [silinecekNotID]);
     return sonuc;
   }
 

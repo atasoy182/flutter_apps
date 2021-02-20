@@ -3,6 +3,7 @@ import 'package:crud_app/utils/database_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'kategori_islemleri.dart';
 import 'models/kategori.dart';
 import 'models/notlar.dart';
 
@@ -36,6 +37,21 @@ class NotListesi extends StatelessWidget {
           title: Center(
             child: Text("Not Sepeti"),
           ),
+          actions: [
+            PopupMenuButton(itemBuilder: (context) {
+              return [
+                PopupMenuItem(
+                    child: ListTile(
+                  leading: Icon(Icons.category),
+                  title: Text("Kategoriler"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _kategorilerSayfasinaGit(context);
+                  },
+                ))
+              ];
+            })
+          ],
         ),
         floatingActionButton: Column(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -138,6 +154,11 @@ class NotListesi extends StatelessWidget {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => NotDetay(baslik: "Yeni Not")));
   }
+
+  _kategorilerSayfasinaGit(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => Kategoriler()));
+  }
 }
 
 class Notlar extends StatefulWidget {
@@ -231,6 +252,28 @@ class _NotlarState extends State<Notlar> {
                               style: TextStyle(fontSize: 22),
                             ),
                           ),
+                          ButtonBar(
+                            alignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              FlatButton(
+                                onPressed: () =>
+                                    _notSil(tumNotlar[index].notID),
+                                child: Text(
+                                  "SİL",
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                              FlatButton(
+                                onPressed: () {
+                                  _detaySayfasinaGit(context, tumNotlar[index]);
+                                },
+                                child: Text("GÜNCELLE",
+                                    style:
+                                        TextStyle(color: Colors.greenAccent)),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     )
@@ -269,5 +312,25 @@ class _NotlarState extends State<Notlar> {
         );
         break;
     }
+  }
+
+  _detaySayfasinaGit(BuildContext context, Not duzenlenecekNot) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => NotDetay(
+                  baslik: "Notu Düzenle",
+                  duzenlenecekNot: duzenlenecekNot,
+                )));
+  }
+
+  _notSil(int notID) {
+    databaseHelper.notSil(notID).then((silinenID) {
+      if (silinenID != 0) {
+        Scaffold.of(context)
+            .showSnackBar(SnackBar(content: Text("Not Silindi")));
+      }
+      setState(() {});
+    });
   }
 }
