@@ -1,4 +1,6 @@
-# counter_with_bloc
+# Counter App
+
+<img src = "https://bloclibrary.dev/assets/gifs/flutter_counter.gif">
 
 A new Flutter application.
 
