@@ -1,4 +1,7 @@
-# timer_with_bloc
+# Timer With Bloc
+
+<img src = "https://bloclibrary.dev/assets/gifs/flutter_timer.gif">
+
 
 A new Flutter application.
 
