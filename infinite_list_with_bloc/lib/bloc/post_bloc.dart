@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:infinite_list_with_bloc/models/post.dart';
 import 'package:meta/meta.dart';
+import 'package:rxdart/rxdart.dart';
 
 import 'post_event.dart';
 import 'post_state.dart';
@@ -12,6 +13,17 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   final http.Client httpClient;
 
   PostBloc({@required this.httpClient}) : super(PostInitial());
+
+  @override
+  Stream<Transition<PostEvent, PostState>> transformEvents(
+    Stream<PostEvent> events,
+    TransitionFunction<PostEvent, PostState> transitionFn,
+  ) {
+    return super.transformEvents(
+      events.debounceTime(const Duration(milliseconds: 500)),
+      transitionFn,
+    );
+  }
 
   @override
   Stream<PostState> mapEventToState(PostEvent event) async* {
@@ -42,9 +54,8 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       state is PostSuccess && state.hasReachedMax;
 
   Future<List<Post>> _fetchPosts(int startIndex, int limit) async {
-    final response = await httpClient.get(Uri(
-        path:
-            'https://jsonplaceholder.typicode.com/posts?_start=$startIndex&_limit=$limit'));
+    final response = await httpClient.get(
+        'https://jsonplaceholder.typicode.com/posts?_start=$startIndex&_limit=$limit');
     if (response.statusCode == 200) {
       final data = json.decode(response.body) as List;
       return data.map((rawPost) {
