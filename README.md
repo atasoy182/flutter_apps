@@ -5,3 +5,4 @@
 3. [Counter App](https://github.com/atasoy182/flutter_apps/tree/master/counter_with_bloc) Bloc ile counter uygulaması.
 4. [Timer App](https://github.com/atasoy182/flutter_apps/tree/master/timer_with_bloc) Bloc ile timer uygulaması.
 5. [Infinite List](https://github.com/atasoy182/flutter_apps/tree/master/infinite_list_with_bloc) Bloc ile infinite list uygulaması.
+6. [Weather App](https://github.com/atasoy182/flutter_apps/tree/master/weatherapp_with_bloc) Bloc ile hava durumu uygulaması.
